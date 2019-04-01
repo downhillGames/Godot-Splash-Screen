@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://SplashScreen.gd" type="Script" id=1]
+[ext_resource path="res://black.png" type="Texture" id=2]
+[ext_resource path="res://imageedit_5_2013266958.png" type="Texture" id=3]
+
+[node name="SplashScreen" type="Node2D" index="0"]
+
+script = ExtResource( 1 )
+_sections_unfolded = [ "Visibility" ]
+
+[node name="background" type="Sprite" parent="." index="0"]
+
+position = Vector2( 484.611, 270.432 )
+texture = ExtResource( 2 )
+
+[node name="logo" type="Sprite" parent="." index="1"]
+
+position = Vector2( 528.903, 256.102 )
+scale = Vector2( 0.625524, 0.614382 )
+texture = ExtResource( 3 )
+_sections_unfolded = [ "Animation", "Region", "Visibility" ]
+
+
