@@ -1,26 +1,39 @@
+# ============================================================================
+# Name        : SplashScreen.gd
+# Author      : Tyler Schmidt
+# Date        : 4/09/2019
+# Project     : Generic Splash Screen
+# Description : This script is meant to be attached to a Splash Screen Tree (Scene) and then instanced to the root node of the game
+#			 	of a game created in Godot to start a basic splash screen upon launching the game. The Splash screen also 
+#				features the ability to load resources and scenes needed for the next scene through the use of background threads.
+#			    Open License, this code was uploaded to help others!
+# ============================================================================
+
+
 extends Node2D
 
 
 onready var logoNode = get_node("logo")
-var second_logo = preload("res://icon.png")
+var second_logo = preload("res://Assets/createdUsingGodot.PNG")
 
 # CHANGE THESE VARIABLES TO SPEED / SLOW ANIMATION
 var timer_count = 5
 var image_full_time = 5
-var transpanancy_amount = 0.02
+var transparency_amount = 0.03
 
 var timer = timer_count
-var transparancy1 = 0
-var transparancy2 = 0
-var image_full1
-var image_full2
+var transparency = 0
+var image_full
 var game_timer = 0
 var is_visible
 var image2_shown
+var next_level
+
+var loadingThread = Thread.new()
 
 func _ready():
 
-	image_full1 = false
+	image_full = false
 	is_visible = false
 	image2_shown = false
 	
@@ -29,43 +42,56 @@ func _ready():
 
 func _process(delta):
 
-	if (game_timer == 5):
-		var next_level_resource = load("res://NextScene.tscn")
-		var next_level = next_level_resource.instance()
-		get_parent().add_child(next_level)
-	if (game_timer == 10000):
-		get_parent().remove_child(self)
-		self.call_deferred("free")
 
-	logoNode.modulate = Color(1, 1, 1, transparancy1)
-	
-
-	if (transparancy1 > 0):
+	if (transparency > 0):
 		is_visible = true
 	else:
 		is_visible = false
 		
 	#print(is_visible)
 	
-	if (timer == 0 && transparancy1 < 1.0 && image_full1 == false):
-		transparancy1 += transpanancy_amount
+
+	if (timer == 0 && transparency < 1.0 && image_full == false):
+		transparency += transparency_amount
+		logoNode.modulate = Color(1, 1, 1, transparency)
 		timer = timer_count
-	elif (timer == 0 && transparancy1 > 0.0 && image_full1 == true):
-		transparancy1 -= transpanancy_amount
+	elif (timer == 0 && transparency > 0.0 && image_full == true):
+		transparency -= transparency_amount
+		logoNode.modulate = Color(1, 1, 1, transparency)
 		timer = timer_count
-	elif (timer == 0 && image_full1 == true && transparancy1 == 0.0):
+	elif (timer == 0 && image_full == true && transparency == 0.0):
 		timer = timer_count
-	elif (timer == 0 && logoNode.modulate == Color(1, 1, 1, 1.0)):
-		image_full1 = true
+	elif (timer == 0 && transparency >= 1.0):
+		image_full = true
 		timer = image_full_time
 	elif (timer > 0):
 		timer -= 1
 	
-	if (timer == 0 && is_visible == false && image_full1 == true && image2_shown == false):
+	if (timer == 0 && is_visible == false && image_full == true && image2_shown == false):
 		timer = timer_count + 20
-		image_full1 = false
+		image_full = false
 		image2_shown = true
+		loadingThread.start(self, "loadingThreadFunc")
 		logoNode.set_texture(second_logo)
+	elif (timer == 0 && is_visible == false && image_full == true && image2_shown == true):
+		loadingThread.wait_to_finish()
+		get_parent().add_child(next_level)
+		
+		get_parent().remove_child(self)
+		self.call_deferred("free")
+	
 	
 	game_timer+=1
+	
+	
+func loadingThreadFunc(var data):
+	print("loading main menu")
+	var next_level_resource = load("res://scenes/TitleScreen.tscn")
+	next_level = next_level_resource.instance()
+	#get_parent().add_child(next_level)
+	call_deferred("loadingThreadDone")
+	
+func loadingThreadDone():
+    print("main menu loaded!")
+	
 	
